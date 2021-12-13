@@ -11,7 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice(AppModule, {
     transport: Transport.RMQ,
     options: {
-      urls: [`amqp://<user>:<pass>@<host>:5672/<internal_host>`],
+      urls: [`amqp://<user>:<password>@<host>:5672/<internalHost>`],
       noAck: false,
       queue: '<queue_name>',
     },

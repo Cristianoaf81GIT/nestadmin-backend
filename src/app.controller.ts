@@ -28,20 +28,55 @@ export class AppController {
       await channel.ack(originalMessage);
     } catch (error) {
       this.logger.error(`error: ${JSON.stringify(error.message)}`);
-      this.ackErrors.forEach(async (ackError) => {
-        if (error.message.includes(ackError)) {
-          await channel.ack(originalMessage);
-        }
-      });
+
+      // this.ackErrors.forEach(async (ackError) => {
+      //   if (error.message.includes(ackError)) {
+      //     await channel.ack(originalMessage);
+      //   }
+      // });
+
+      const filterAckErrors = this.ackErrors.filter((ackError) =>
+        error.message.includes(ackError),
+      );
+
+      if (filterAckErrors) await channel.ack(originalMessage);
     }
   }
 
   @MessagePattern('consultar-categorias')
-  async consultarCategorias(@Payload() _id: string) {
-    if (_id) {
-      return await this.appService.consultarTodasCategoriaPeloId(_id);
-    } else {
-      return await this.appService.consultarTodasCategorias();
+  async consultarCategorias(
+    @Payload() _id: string,
+    @Ctx() context: RmqContext,
+  ) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+    try {
+      if (_id) {
+        return await this.appService.consultarTodasCategoriaPeloId(_id);
+      } else {
+        return await this.appService.consultarTodasCategorias();
+      }
+    } finally {
+      await channel.ack(originalMsg);
+    }
+  }
+
+  @EventPattern('atualizar-categoria')
+  async atualizarCategoria(@Payload() data: any, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+    this.logger.log(`data: ${JSON.stringify(data)}`);
+    try {
+      const _id = data.id;
+      const categoria: Categoria = data.categoria;
+      await this.appService.atualizarCategoria(_id, categoria);
+      await channel.ack(originalMsg);
+    } catch (error) {
+      const filterAckErrors = this.ackErrors.filter((ackError) =>
+        error.message.includes(ackError),
+      );
+
+      if (filterAckErrors) await channel.ack(originalMsg);
     }
   }
 }
