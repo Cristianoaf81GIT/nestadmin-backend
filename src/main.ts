@@ -1,21 +1,33 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as dotenv from 'dotenv';
 import { Logger } from '@nestjs/common';
-import { Transport } from '@nestjs/microservices';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
+import { type } from 'os';
 
-dotenv.config();
 const logger = new Logger('main');
 
+/**
+ *
+ */
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice(AppModule, {
-    transport: Transport.RMQ,
-    options: {
-      urls: [`amqp://<user>:<password>@<host>:5672/<internalHost>`],
-      noAck: false,
-      queue: '<queue_name>',
+  const configService = new ConfigService();
+  const transport = parseInt(configService.get<string>('TRANSPORT_LOCAL'));
+  const connectionUrl = configService.get<string>('SERVER_URL_LOCAL');
+  const noAckOp = configService.get<string>('NOACK') === 'true';
+  const queueName = configService.get<string>('QUEUE_NAME_LOCAL');
+
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AppModule,
+    {
+      transport,
+      options: {
+        urls: [connectionUrl],
+        noAck: noAckOp,
+        queue: queueName,
+      },
     },
-  });
+  );
   logger.log('microservice is listening');
   await app.listen();
 }
