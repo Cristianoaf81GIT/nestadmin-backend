@@ -1,15 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { MicroserviceOptions } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
-import { type } from 'os';
 
 const logger = new Logger('main');
 
-/**
- *
- */
 async function bootstrap() {
   const configService = new ConfigService();
   const transport = parseInt(configService.get<string>('TRANSPORT_LOCAL'));
