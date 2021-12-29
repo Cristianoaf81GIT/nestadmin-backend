@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { MongooseConfigurations } from './config/mongoose.config';
-import { CategoriaSchema } from './interfaces/categorias/categoria.schema';
-import { JogadorSchema } from './interfaces/jogadores/jogador.schema';
+import { CategoriasModule } from './categorias/categorias.module';
+import { JogadoresModule } from './jogadores/jogadores.module';
 
 @Module({
   imports: [
@@ -13,12 +11,10 @@ import { JogadorSchema } from './interfaces/jogadores/jogador.schema';
     MongooseModule.forRootAsync({
       useClass: MongooseConfigurations,
     }),
-    MongooseModule.forFeatureAsync([
-      { name: 'Categoria', useFactory: () => CategoriaSchema },
-      { name: 'Jogador', useFactory: () => JogadorSchema },
-    ]),
+    CategoriasModule,
+    JogadoresModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
