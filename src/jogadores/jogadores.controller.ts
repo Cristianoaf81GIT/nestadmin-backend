@@ -36,6 +36,26 @@ export class JogadoresController {
     }
   }
 
+  @EventPattern('atualizar-jogador')
+  async atualizarJogador(@Payload() data: any, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+    try {
+      const _id: string = data.id;
+      const jogador: Jogador = data.jogador;
+      await this.jogadoresService.atualizarJogador(_id, jogador);
+      await channel.ack(originalMsg);
+    } catch (error) {
+      const filterAckError = ackErrors.filter((ackError) =>
+        error.message.includes(ackError),
+      );
+
+      if (filterAckError.length > 0) {
+        await channel.ack(originalMsg);
+      }
+    }
+  }
+
   @MessagePattern('consultar-jogadores')
   async consultarJogadores(@Payload() _id: string, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();
@@ -45,26 +65,6 @@ export class JogadoresController {
       else return await this.jogadoresService.consultarTodosJogadores();
     } finally {
       await channel.ack(originalMessage);
-    }
-  }
-
-  @EventPattern('atualizar-jogador')
-  async atualizarJogador(@Payload() data: any, @Ctx() context: RmqContext) {
-    const channel = context.getChannelRef();
-    const originalMessage = context.getMessage();
-    try {
-      this.logger.log(`data: ${JSON.stringify(data)}`);
-      const _id: string = data.id;
-      const jogador: Jogador = data.jogador;
-      await this.jogadoresService.atualizarJogador(_id, jogador);
-      await channel.ack(originalMessage);
-    } catch (error) {
-      const filterAckError = ackErrors.filter((ackError) =>
-        error.message.includes(ackError),
-      );
-      if (filterAckError.length > 0) {
-        await channel.ack(originalMessage);
-      }
     }
   }
 
