@@ -24,7 +24,7 @@ export class JogadoresService {
 
   async consultarTodosJogadores(): Promise<Jogador[]> {
     try {
-      return await this.jogadorModel.find().populate('categoria').exec();
+      return await this.jogadorModel.find().exec();
     } catch (error) {
       this.logger.error(`error: ${JSON.stringify(error.message)}`);
       throw new RpcException(error.message);
@@ -33,10 +33,7 @@ export class JogadoresService {
 
   async consultarJogadorPeloId(_id: string): Promise<Jogador> {
     try {
-      return await this.jogadorModel
-        .findOne({ _id })
-        .populate('categoria')
-        .exec();
+      return await this.jogadorModel.findOne({ _id }).exec();
     } catch (error) {
       this.logger.error(`error: ${JSON.stringify(error.message)}`);
       throw new RpcException(error.message);
