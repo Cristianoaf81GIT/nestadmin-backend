@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
 import { MicroserviceOptions } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
+import { format } from 'date-fns-tz';
+import ptBR from 'date-fns/locale/pt-BR';
 
 const logger = new Logger('main');
 
@@ -24,6 +26,17 @@ async function bootstrap() {
       },
     },
   );
+
+  Date.prototype.toJSON = (): string => {
+    try {
+      return format(this, 'yyyy-MM-dd HH:mm:ss.SS', {
+        timeZone: 'America/Sao_Paulo',
+        locale: ptBR,
+      });
+    } catch (error: unknown) {
+      return this;
+    }
+  };
 
   logger.log('microservice is listening');
   await app.listen();
